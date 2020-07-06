@@ -1,0 +1,328 @@
+// 定义项目 API 的 proto 文件 可以同时描述 gRPC 和 HTTP API
+// protobuf 文件参考:
+//  - https://developers.google.com/protocol-buffers/
+syntax = "proto3";
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+// package 命名使用 {appid}.{version} 的方式, version 形如 v1, v2 ..
+package admin.service.v1;
+
+option go_package = "api";
+option (gogoproto.goproto_getters_all) = false;
+
+service Admin {
+    rpc Ping (.google.protobuf.Empty) returns (.google.protobuf.Empty);
+
+    // 获取验证码
+    rpc GetCaptcha (.google.protobuf.Empty) returns (CaptchaResp) {
+        option (google.api.http) = {
+          get: "/admin/v1/captcha/get"
+        };
+    };
+    // 登录
+    rpc Login (LoginReq) returns (LoginResp) {
+        option (google.api.http) = {
+          post: "/admin/login"
+        };
+    };
+    // 登出
+    rpc Logout (.google.protobuf.Empty) returns (.google.protobuf.Empty) {
+        option (google.api.http) = {
+          post: "/admin/logout"
+        };
+    };
+    // 获取用户信息
+    rpc GetUserInfo (.google.protobuf.Empty) returns (UserInfoResp) {
+        option (google.api.http) = {
+          get: "/admin/v1/user/info/get"
+        };
+    };
+    // 获取用户
+    rpc GetUser (UserReq) returns (UserInfo) {
+        option (google.api.http) = {
+          get: "/admin/v1/user/get"
+        };
+    };
+    // 添加用户
+    rpc AddUser (AddUserReq) returns (AddUserResp) {
+        option (google.api.http) = {
+          get: "/admin/v1/user/add"
+        };
+    };
+    // 根据角色名称获取菜单列表数据（左菜单使用）
+    rpc GetMenuByRoleKey (.google.protobuf.Empty) returns (MenuRoleResp) {
+        option (google.api.http) = {
+          get: "/admin/v1/user/menu/get_by_rolename"
+        };
+    };
+    // 获取用户列表数据
+    rpc GetUserList (UserListReq) returns (UserListResp) {
+        option (google.api.http) = {
+          get: "/admin/v1/user/list"
+        };
+    };
+    // 更新用户状态
+    rpc UpdateUserState (UpdateUserStateReq) returns (.google.protobuf.Empty) {
+        option (google.api.http) = {
+          put: "/admin/v1/user/update_state"
+        };
+    };
+    // 获取部门树
+    rpc GetDeptTree (.google.protobuf.Empty) returns (DeptTreeResp) {
+        option (google.api.http) = {
+          get: "/admin/v1/dept/tree"
+        };
+    };
+    // 通过字典类型获取字典数据
+    rpc GetDictDataList (DictDataListReq) returns (DictDataListResp) {
+        option (google.api.http) = {
+          get: "/admin/v1/dict_data/list"
+        };
+    };
+    // 通过字典类型获取字典数据
+    rpc GetConfigByKey (ConfigByKeyReq) returns (ConfigInfoResp) {
+        option (google.api.http) = {
+          get: "/admin/v1/config/get_by_key"
+        };
+    };
+    // 获取系统角色列表
+    rpc GetRoleList (.google.protobuf.Empty) returns (RoleListResp) {
+        option (google.api.http) = {
+          get: "/admin/v1/role/list"
+        };
+    };
+    // 获取系统岗位列表
+    rpc GetPostList (.google.protobuf.Empty) returns (PostListResp) {
+        option (google.api.http) = {
+          get: "/admin/v1/post/list"
+        };
+    };
+}
+
+enum State {
+    Enable = 0;
+    Disable = 1;
+}
+
+message LoginReq {
+    string username = 1 [(gogoproto.moretags) = 'form:"username" json:"username" validate:"required"'];
+    string password = 2 [(gogoproto.moretags) = 'form:"password" json:"password" validate:"required"'];
+    bool remember_me = 3 [(gogoproto.moretags) = 'form:"remember_me" json:"remember_me"'];
+    string code = 4 [(gogoproto.moretags) = 'form:"code" json:"code" validate:"required"'];
+    string uuid = 5 [(gogoproto.moretags) = 'form:"uuid" json:"uuid" validate:"required"'];
+}
+
+message LoginResp {
+    int64 expire = 1 [(gogoproto.jsontag) = 'expire'];
+    string token = 2 [(gogoproto.jsontag) = 'token'];
+}
+
+message AddUserReq {
+    string username = 1 [(gogoproto.moretags) = 'form:"username" json:"username" validate:"required"'];
+    string password = 2 [(gogoproto.moretags) = 'form:"password" json:"password" validate:"required"'];
+    bool remember_me = 3 [(gogoproto.moretags) = 'form:"remember_me" json:"remember_me"'];
+    string code = 4 [(gogoproto.moretags) = 'form:"code" json:"code" validate:"required"'];
+    string uuid = 5 [(gogoproto.moretags) = 'form:"uuid" json:"uuid" validate:"required"'];
+}
+
+message AddUserResp {
+    int64 expire = 1 [(gogoproto.jsontag) = 'expire'];
+    string token = 2 [(gogoproto.jsontag) = 'token'];
+}
+
+message UserReq {
+    int32 id = 1 [(gogoproto.moretags) = 'form:"id" json:"id" validate:"required"'];
+}
+
+message ConfigByKeyReq {
+    string key = 1 [(gogoproto.moretags) = 'form:"key" json:"key" validate:"required"'];
+}
+
+message UpdateUserStateReq {
+    int32 user_id = 1 [(gogoproto.moretags) = 'form:"user_id" json:"user_id" validate:"required"'];
+    State state = 2 [(gogoproto.moretags) = 'form:"state" json:"state"'];
+}
+
+message ConfigInfoResp {
+    int32 id = 1 [(gogoproto.jsontag) = 'id'];
+    string name = 2 [(gogoproto.jsontag) = 'name'];
+    string key = 3 [(gogoproto.jsontag) = 'key'];
+    string value = 4 [(gogoproto.jsontag) = 'value'];
+    string type = 5 [(gogoproto.jsontag) = 'type'];
+    string remark = 6 [(gogoproto.jsontag) = 'remark'];
+    string create_by = 7 [(gogoproto.jsontag) = 'create_by'];
+    string update_by = 8 [(gogoproto.jsontag) = 'update_by'];
+    int64 create_timestamp = 9 [(gogoproto.jsontag) = 'create_timestamp'];
+    int64 update_timestamp = 10 [(gogoproto.jsontag) = 'update_timestamp'];
+    int64 delete_timestamp = 11 [(gogoproto.jsontag) = 'delete_timestamp'];
+}
+
+message RoleInfo {
+    int32 id = 1 [(gogoproto.jsontag) = 'id'];
+    string name = 2 [(gogoproto.jsontag) = 'name'];
+    State state = 3 [(gogoproto.jsontag) = 'state'];
+    string key = 4 [(gogoproto.jsontag) = 'key'];
+    int32 sort = 5 [(gogoproto.jsontag) = 'sort'];
+    string flag = 6 [(gogoproto.jsontag) = 'flag'];
+    string create_by = 7 [(gogoproto.jsontag) = 'create_by'];
+    string update_by = 8 [(gogoproto.jsontag) = 'update_by'];
+    string remark = 9 [(gogoproto.jsontag) = 'remark'];
+    string data_scope = 10 [(gogoproto.jsontag) = 'data_scope'];
+    string params = 11 [(gogoproto.jsontag) = 'params'];
+    int64 create_timestamp = 12 [(gogoproto.jsontag) = 'create_timestamp'];
+    int64 update_timestamp = 13 [(gogoproto.jsontag) = 'update_timestamp'];
+    int64 delete_timestamp = 14 [(gogoproto.jsontag) = 'delete_timestamp'];
+}
+
+message PostInfo {
+    int32 id = 1 [(gogoproto.jsontag) = 'id'];
+    string name = 2 [(gogoproto.jsontag) = 'name'];
+    string code = 3 [(gogoproto.jsontag) = 'code'];
+    int32 sort = 4 [(gogoproto.jsontag) = 'sort'];
+    State state = 5 [(gogoproto.jsontag) = 'state'];
+    string remark = 6 [(gogoproto.jsontag) = 'remark'];
+    string create_by = 7 [(gogoproto.jsontag) = 'create_by'];
+    string update_by = 8 [(gogoproto.jsontag) = 'update_by'];
+    int64 create_timestamp = 9 [(gogoproto.jsontag) = 'create_timestamp'];
+    int64 update_timestamp = 10 [(gogoproto.jsontag) = 'update_timestamp'];
+    int64 delete_timestamp = 11 [(gogoproto.jsontag) = 'delete_timestamp'];
+}
+
+message RoleListResp {
+    repeated RoleInfo content = 1 [(gogoproto.jsontag) = 'content'];
+}
+
+message PostListResp {
+    repeated PostInfo content = 1 [(gogoproto.jsontag) = 'content'];
+}
+
+message DictDataListReq {
+    string code = 1 [(gogoproto.moretags) = 'form:"code" json:"code"'];
+    string label = 2 [(gogoproto.moretags) = 'form:"label" json:"label"'];
+    string type = 3 [(gogoproto.moretags) = 'form:"type" json:"type"'];
+}
+
+message DictDataListResp {
+    message Info {
+        int32 code = 1 [(gogoproto.jsontag) = 'code'];
+        int32 sort = 2 [(gogoproto.jsontag) = 'sort'];
+        string label = 3 [(gogoproto.jsontag) = 'label'];
+        string value = 4 [(gogoproto.jsontag) = 'value'];
+        string type = 5 [(gogoproto.jsontag) = 'type'];
+        string css_class = 6 [(gogoproto.jsontag) = 'css_class'];
+        string list_class = 7 [(gogoproto.jsontag) = 'list_class'];
+        string is_default = 8 [(gogoproto.jsontag) = 'is_default'];
+        int32 state = 9 [(gogoproto.jsontag) = 'state'];
+        string default = 10 [(gogoproto.jsontag) = 'default'];
+        string create_by = 11 [(gogoproto.jsontag) = 'create_by'];
+        string update_by = 12 [(gogoproto.jsontag) = 'update_by'];
+        string remark = 13 [(gogoproto.jsontag) = 'remark'];
+    }
+    repeated Info content = 1 [(gogoproto.jsontag) = 'content'];
+}
+
+message DeptInfo {
+    int32 dept_id = 1 [(gogoproto.jsontag) = 'dept_id'];
+    int32 parent_id = 2 [(gogoproto.jsontag) = 'parent_id'];
+    string dept_path = 3 [(gogoproto.jsontag) = 'dept_path'];
+    string dept_name = 4 [(gogoproto.jsontag) = 'dept_name'];
+    int32 sort = 5 [(gogoproto.jsontag) = 'sort'];
+    string leader = 6 [(gogoproto.jsontag) = 'leader'];
+    string phone = 7 [(gogoproto.jsontag) = 'phone'];
+    string email = 8 [(gogoproto.jsontag) = 'email'];
+    int32 state = 9 [(gogoproto.jsontag) = 'state'];
+    string create_by = 10 [(gogoproto.jsontag) = 'create_by'];
+    string update_by = 11 [(gogoproto.jsontag) = 'update_by'];
+    int64 create_timestamp = 12 [(gogoproto.jsontag) = 'create_timestamp'];
+    int64 update_timestamp = 13 [(gogoproto.jsontag) = 'update_timestamp'];
+    int64 delete_timestamp = 14 [(gogoproto.jsontag) = 'delete_timestamp'];
+    repeated DeptInfo children = 15 [(gogoproto.jsontag) = 'children'];
+}
+
+message DeptTreeResp {
+    repeated DeptInfo content = 2 [(gogoproto.jsontag) = 'content'];
+}
+
+message UserListReq {
+    // 页码，从1开始
+    int64 page = 1 [(gogoproto.moretags) = 'form:"page" validate:"required"'];
+    // 页面的大小
+    int64 page_size = 2 [(gogoproto.moretags) = 'form:"page_size" validate:"required"'];
+    // 部门ID
+    int64 dept_id = 3 [(gogoproto.moretags) = 'form:"dept_id"'];
+}
+
+message UserInfo {
+    int32 id = 1 [(gogoproto.jsontag) = "id"];
+    string nick_name = 2 [(gogoproto.jsontag) = "nick_name"];
+    string phone = 3 [(gogoproto.jsontag) = "phone"];
+    int32 role_id = 4 [(gogoproto.jsontag) = "role_id"];
+    string avatar = 5 [(gogoproto.jsontag) = "avatar"];
+    string sex = 6 [(gogoproto.jsontag) = "sex"];
+    string email = 7 [(gogoproto.jsontag) = "email"];
+    int32 dept_id = 8 [(gogoproto.jsontag) = "dept_id"];
+    string dept_name = 9 [(gogoproto.jsontag) = "dept_name"];
+    int32 post_id = 10 [(gogoproto.jsontag) = "post_id"];
+    string create_by = 11 [(gogoproto.jsontag) = "create_by"];
+    string update_by = 12 [(gogoproto.jsontag) = "update_by"];
+    string remark = 13 [(gogoproto.jsontag) = "remark"];
+    int32 state = 14 [(gogoproto.jsontag) = "state"];
+    string username = 15 [(gogoproto.jsontag) = "username"];
+    int64 create_timestamp = 16 [(gogoproto.jsontag) = 'create_timestamp'];
+    int64 update_timestamp = 17 [(gogoproto.jsontag) = 'update_timestamp'];
+    int64 delete_timestamp = 18 [(gogoproto.jsontag) = 'delete_timestamp'];
+}
+
+message UserListResp {
+    int64 total = 1 [(gogoproto.jsontag) = "total"];
+    int64 total_page = 2 [(gogoproto.jsontag) = "total_page"];
+    repeated UserInfo content = 3 [(gogoproto.jsontag) = "content"];
+}
+
+message CaptchaResp {
+    string id = 1 [(gogoproto.jsontag) = 'id'];
+    string image = 2 [(gogoproto.jsontag) = 'image'];
+}
+
+message UserInfoResp {
+    string avatar = 1 [(gogoproto.jsontag) = 'avatar'];
+    string introduction = 2 [(gogoproto.jsontag) = 'introduction'];
+    string name = 3 [(gogoproto.jsontag) = 'name'];
+    repeated string permissions = 4 [(gogoproto.jsontag) = 'permissions'];
+    repeated string roles = 5 [(gogoproto.jsontag) = 'roles'];
+}
+
+message MenuRoleResp {
+    message Info {
+        int32 menu_id = 1 [(gogoproto.jsontag) = 'menu_id'];
+        string menu_name = 2 [(gogoproto.jsontag) = 'menu_name'];
+        string title = 3 [(gogoproto.jsontag) = 'title'];
+        string icon = 4 [(gogoproto.jsontag) = 'icon'];
+        string path = 5 [(gogoproto.jsontag) = 'path'];
+        string paths = 6 [(gogoproto.jsontag) = 'paths'];
+        string menu_type = 7 [(gogoproto.jsontag) = 'menu_type'];
+        string action = 8 [(gogoproto.jsontag) = 'action'];
+        string permission = 9 [(gogoproto.jsontag) = 'permission'];
+        int32 parent_id = 10 [(gogoproto.jsontag) = 'parent_id'];
+        bool no_cache = 11 [(gogoproto.jsontag) = 'no_cache'];
+        string breadcrumb = 12 [(gogoproto.jsontag) = 'breadcrumb'];
+        string component = 13 [(gogoproto.jsontag) = 'component'];
+        int32 sort = 14 [(gogoproto.jsontag) = 'sort'];
+        string visible = 15 [(gogoproto.jsontag) = 'visible'];
+        string create_by = 16 [(gogoproto.jsontag) = 'create_by'];
+        string update_by = 17 [(gogoproto.jsontag) = 'update_by'];
+        string is_frame = 18 [(gogoproto.jsontag) = 'is_frame'];
+        string data_scope = 19 [(gogoproto.jsontag) = 'data_scope'];
+        string params = 20 [(gogoproto.jsontag) = 'params'];
+        int32 role_id = 21 [(gogoproto.jsontag) = 'role_id'];
+        repeated Info children = 22 [(gogoproto.jsontag) = 'children'];
+        bool is_select = 23 [(gogoproto.jsontag) = 'is_select'];
+        int64 create_timestamp = 24 [(gogoproto.jsontag) = 'create_timestamp'];
+        int64 update_timestamp = 25 [(gogoproto.jsontag) = 'update_timestamp'];
+        int64 delete_timestamp = 26 [(gogoproto.jsontag) = 'delete_timestamp'];
+    }
+    repeated Info content = 1 [(gogoproto.jsontag) = 'content'];
+}
